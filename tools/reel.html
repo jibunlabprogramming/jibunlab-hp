@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#1f6f64">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<title>リール撮影用</title>
+<!--
+  Instagramのリール用の素材を撮るためのページ。
+  スマホで開いて、画面録画をしながら、場面のボタンを押すだけで撮れる。
+  手で打たないので、打ち間違いもキーボードも起きない。
+
+  使い方は 07_集客資料/Instagram_フライヤー/運用計画.md(非公開リポジトリ)を参照。
+
+  画面の中身は、教材(05_教材/00_共通/htmlエディタ)の動きを再現したもの。
+  なめらかに録画するため、iframeではなくDOMで描いている。
+  教材を直したときは、下の SCENES の中身も見直すこと。
+-->
+<style>
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent}
+  :root{
+    --mint:#1f9d8a; --deep:#1f6f64; --bg:#f3fbf8; --line:#bfe9df;
+    --orange:#ffb36b; --salmon:#ff8f7a; --yellow:#ffd479;
+    --code:#173f3a; --codefg:#e9fff9;
+    /* 基準の単位。9:16 を保ちつつ、画面の幅と高さの小さいほうに合わせる。
+       1080x1920 を想定した設計値を、この単位で掛けている。 */
+    --u: min(0.27vw, 0.1235vh);
+  }
+  html,body{height:100%; overflow:hidden; overscroll-behavior:none}
+  body{
+    font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Yu Gothic",system-ui,sans-serif;
+    background:var(--deep); color:var(--deep);
+    display:flex; align-items:center; justify-content:center;
+    user-select:none;
+  }
+
+  /* 画面いっぱい。上下は safe-area を避ける */
+  .stage{
+    /* スマホでは画面いっぱい。PCでは縦長の枠として中央に出る */
+    width:min(100vw, calc(100vh * 9 / 16)); height:100%; position:relative; overflow:hidden;
+    background:linear-gradient(170deg,#fbfffe 0%, #f3fbf8 45%, #e4f6f1 100%);
+    display:flex; align-items:center; justify-content:center;
+  }
+  /* 中身は、必ず中央の 9:16 に収める。
+     スマホの画面は 9:19.5 ほどで、リールは 9:16。Instagramが上下を切るため、
+     ここからはみ出すと、ブランドの帯や最後の文言が欠ける。 */
+  .safe{
+    width:100%; aspect-ratio:9 / 16; max-height:100%;
+    display:flex; flex-direction:column; gap:calc(16*var(--u));
+    padding:calc(26*var(--u)) calc(26*var(--u));
+  }
+
+  /* ===== 開始画面 ===== */
+  .menu{
+    position:absolute; inset:0; z-index:30; background:var(--deep); color:#fff;
+    display:flex; flex-direction:column; justify-content:center; gap:2.4vh;
+    padding:6vh 7vw; text-align:center;
+  }
+  .menu h1{font-size:calc(26*var(--u)); font-weight:900; line-height:1.4}
+  .menu p{font-size:calc(14*var(--u)); color:#b8e7dc; font-weight:700; line-height:1.7}
+  .menu .tips{
+    background:rgba(255,255,255,.1); border-radius:calc(14*var(--u));
+    padding:calc(14*var(--u)); font-size:calc(12.5*var(--u)); text-align:left; line-height:1.8;
+  }
+  .menu button{
+    font:inherit; font-weight:900; font-size:calc(17*var(--u)); color:#1f4f47;
+    background:#fff; border:0; border-radius:calc(16*var(--u));
+    padding:calc(15*var(--u)) calc(10*var(--u)); cursor:pointer; line-height:1.4;
+  }
+  .menu button small{display:block; font-size:calc(11.5*var(--u)); font-weight:700; color:#55847c; margin-top:2px}
+  .menu button:active{transform:scale(.97)}
+
+  /* ===== 共通の部品 ===== */
+  .brandbar{display:flex; align-items:center; gap:calc(7*var(--u)); flex:none}
+  .brandbar svg{width:calc(26*var(--u)); height:auto}
+  .brandbar span{font-size:calc(13*var(--u)); font-weight:900; color:var(--deep)}
+  .brandbar em{
+    margin-left:auto; font-style:normal; font-size:calc(11.5*var(--u)); font-weight:700;
+    color:#fff; background:var(--mint); padding:calc(4*var(--u)) calc(11*var(--u));
+    border-radius:999px; white-space:nowrap;
+  }
+
+  .hook{
+    flex:none; font-size:calc(27*var(--u)); font-weight:900; line-height:1.34; color:var(--deep);
+    opacity:0; transform:translateY(calc(10*var(--u)));
+    transition:opacity .45s ease, transform .45s ease;
+  }
+  .hook.on{opacity:1; transform:none}
+  .hook .hl{background:linear-gradient(transparent 58%, #ffe0a8 58%); padding:0 .1em}
+
+  .pane{flex:none}
+  .pane .cap{
+    font-size:calc(12.5*var(--u)); font-weight:900; color:#55847c; margin-bottom:calc(5*var(--u));
+    display:flex; align-items:center; gap:calc(7*var(--u));
+  }
+  .pane .cap i{
+    font-style:normal; background:var(--orange); color:#5b2b00; font-size:calc(10.5*var(--u));
+    padding:calc(2*var(--u)) calc(9*var(--u)); border-radius:999px;
+  }
+
+  /* コード欄 */
+  #code{
+    background:var(--code); color:var(--codefg); border-radius:calc(14*var(--u));
+    padding:calc(14*var(--u)) calc(14*var(--u));
+    font:calc(16*var(--u))/1.9 ui-monospace,Consolas,"Courier New",monospace;
+    white-space:pre-wrap; word-break:break-all; min-height:calc(118*var(--u));
+  }
+  #code .sel{background:var(--yellow); color:#222; border-radius:3px}
+  #code .cur{
+    display:inline-block; width:calc(2.2*var(--u)); height:calc(16*var(--u));
+    background:var(--yellow); vertical-align:-3px; animation:blink .9s steps(1) infinite;
+  }
+  @keyframes blink{50%{opacity:0}}
+
+  /* プレビュー */
+  #view{
+    background:#fff; border:calc(3.6*var(--u)) solid var(--line); border-radius:calc(14*var(--u));
+    padding:calc(17*var(--u)) calc(18*var(--u)); min-height:calc(138*var(--u));
+    font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN",sans-serif; color:#222;
+  }
+  #view h2{font-size:calc(24*var(--u)); font-weight:700; line-height:1.4; margin-bottom:calc(8*var(--u))}
+  #view p{font-size:calc(16*var(--u)); line-height:1.7}
+  #view .changed{animation:pop .5s ease}
+  @keyframes pop{0%{transform:scale(1)}35%{transform:scale(1.07)}100%{transform:scale(1)}}
+
+  /* エラー箱 */
+  #err{
+    background:#fff0ee; border:calc(3.4*var(--u)) dashed var(--salmon);
+    border-radius:calc(13*var(--u)); padding:calc(12*var(--u)) calc(14*var(--u));
+    font-size:calc(13.5*var(--u)); font-weight:700; line-height:1.65; color:#7a3326;
+    display:none;
+  }
+  #err.on{display:block; animation:slide .4s ease}
+  #err b{color:#c0452f; font-size:calc(15*var(--u))}
+  @keyframes slide{from{opacity:0; transform:translateY(calc(-8*var(--u)))}to{opacity:1; transform:none}}
+
+  /* ラボくんの吹き出し */
+  .say{display:flex; align-items:flex-end; gap:calc(9*var(--u)); margin-top:auto; flex:none}
+  .say svg{width:calc(46*var(--u)); height:auto; flex:none}
+  .say .bubble{
+    background:#fff3dc; border:calc(2.6*var(--u)) solid #ffcf86; border-radius:calc(14*var(--u));
+    padding:calc(9*var(--u)) calc(14*var(--u)); font-size:calc(15*var(--u)); font-weight:900; color:#6b4410;
+    opacity:0; transform:translateY(calc(6*var(--u))); transition:opacity .35s, transform .35s;
+  }
+  .say .bubble.on{opacity:1; transform:none}
+
+  /* ===== 料金の場面 ===== */
+  .money{display:flex; flex-direction:column; gap:calc(20*var(--u)); flex:1; justify-content:center}
+  .row{display:flex; gap:calc(11*var(--u))}
+  .cardp{
+    flex:1; background:#fff; border:calc(3.6*var(--u)) solid var(--line);
+    border-radius:calc(20*var(--u)); padding:calc(22*var(--u)) calc(8*var(--u)); text-align:center;
+    opacity:0; transform:translateY(calc(14*var(--u)) ) scale(.96);
+    transition:opacity .4s ease, transform .4s cubic-bezier(.2,1.3,.4,1);
+  }
+  .cardp.on{opacity:1; transform:none}
+  .cardp .n{font-size:calc(17*var(--u)); font-weight:900; color:var(--deep)}
+  .cardp .y{font-size:calc(32*var(--u)); font-weight:900; color:var(--mint); line-height:1.25; white-space:nowrap}
+  .cardp .y small{font-size:calc(14*var(--u))}
+  .zrow{display:flex; gap:calc(9*var(--u))}
+  .z{
+    flex:1; background:#fff6ea; border:calc(3.2*var(--u)) solid var(--orange); border-radius:calc(14*var(--u));
+    padding:calc(15*var(--u)) calc(4*var(--u)); text-align:center;
+    font-size:calc(15*var(--u)); font-weight:900; color:#8a5214;
+    opacity:0; transform:scale(.9); transition:opacity .35s, transform .35s cubic-bezier(.2,1.4,.4,1);
+  }
+  .z.on{opacity:1; transform:none}
+  .z b{color:#e8741f; display:block; font-size:calc(21*var(--u))}
+  .once{
+    text-align:center; font-size:calc(17*var(--u)); font-weight:900; color:#3d6b64;
+    opacity:0; transition:opacity .4s;
+  }
+  .once.on{opacity:1}
+
+  /* ===== 締めの帯 ===== */
+  .end{
+    flex:none; background:var(--deep); color:#fff; border-radius:calc(16*var(--u));
+    padding:calc(13*var(--u)) calc(14*var(--u)); text-align:center;
+    opacity:0; transform:translateY(calc(10*var(--u))); transition:opacity .45s, transform .45s;
+  }
+  .end.on{opacity:1; transform:none}
+  .end .a{font-size:calc(16.5*var(--u)); font-weight:900; line-height:1.45}
+  .end .b{font-size:calc(12.5*var(--u)); font-weight:700; color:#a9e2d6; margin-top:calc(3*var(--u))}
+
+  /* もう一度 */
+  #again{
+    position:absolute; left:50%; transform:translateX(-50%);
+    bottom:calc(env(safe-area-inset-bottom) + 1.2vh); z-index:20;
+    font:inherit; font-weight:900; font-size:calc(12*var(--u));
+    background:rgba(31,111,100,.86); color:#fff; border:0;
+    padding:calc(8*var(--u)) calc(18*var(--u)); border-radius:999px;
+    opacity:0; pointer-events:none; transition:opacity .4s;
+  }
+  #again.on{opacity:1; pointer-events:auto}
+
+  .hide{display:none !important}
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage">
+ <div class="safe">
+
+  <div class="brandbar">
+    <svg viewBox="0 0 130 150" aria-hidden="true">
+      <rect x="48" y="20" width="34" height="30" rx="5" fill="#fff" stroke="#1f6f64" stroke-width="6"/>
+      <path d="M48 48 L20 112 Q12 140 42 140 H88 Q118 140 110 112 L82 48 Z" fill="#fff" stroke="#1f6f64" stroke-width="6" stroke-linejoin="round"/>
+      <path d="M30 96 Q65 84 100 96 L110 112 Q118 140 88 140 H42 Q12 140 20 112 Z" fill="#7fe0cc"/>
+      <circle cx="50" cy="106" r="7" fill="#222"/><circle cx="80" cy="106" r="7" fill="#222"/>
+      <path d="M54 120 Q65 131 76 120" stroke="#222" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M40 20 H90" stroke="#1f6f64" stroke-width="6" stroke-linecap="round"/>
+    </svg>
+    <span>じぶんラボ</span>
+    <em>西八王子｜小4〜中学生</em>
+  </div>
+
+  <div class="hook" id="hook"></div>
+
+  <!-- エディタの場面 -->
+  <div id="editor">
+    <div class="pane">
+      <div class="cap"><i>STEP 1</i>コードを 書きかえる</div>
+      <div id="code"></div>
+    </div>
+    <div class="pane" style="margin-top:calc(14*var(--u))">
+      <div class="cap"><i>STEP 2</i>できあがりの ページ</div>
+      <div id="view"><h2 id="vh"></h2><p id="vp"></p></div>
+    </div>
+    <div id="err" style="margin-top:calc(12*var(--u))"></div>
+  </div>
+
+  <!-- 料金の場面 -->
+  <div class="money hide" id="money">
+    <div class="row">
+      <div class="cardp" id="p1"><div class="n">月2回コース</div><div class="y">6,000<small>円/月</small></div></div>
+      <div class="cardp" id="p2"><div class="n">月4回コース</div><div class="y">12,000<small>円/月</small></div></div>
+    </div>
+    <div class="once" id="once">1回50分｜どちらも1回あたり 3,000円</div>
+    <div class="zrow">
+      <div class="z" id="z1">入会金<b>0円</b></div>
+      <div class="z" id="z2">教材費<b>0円</b></div>
+      <div class="z" id="z3">交通費<b>0円</b></div>
+    </div>
+  </div>
+
+  <div class="say" id="say">
+    <svg viewBox="0 0 130 150" aria-hidden="true">
+      <rect x="48" y="20" width="34" height="30" rx="5" fill="#fff" stroke="#1f6f64" stroke-width="6"/>
+      <path d="M48 48 L20 112 Q12 140 42 140 H88 Q118 140 110 112 L82 48 Z" fill="#7fe0cc" stroke="#1f6f64" stroke-width="6" stroke-linejoin="round"/>
+      <circle cx="50" cy="106" r="9" fill="#222"/><circle cx="80" cy="106" r="9" fill="#222"/>
+      <path d="M54 122 Q65 133 76 122" stroke="#222" stroke-width="5" fill="none" stroke-linecap="round"/>
+    </svg>
+    <div class="bubble" id="bubble"></div>
+  </div>
+
+  <div class="end" id="endbar">
+    <div class="a" id="enda"></div>
+    <div class="b" id="endb"></div>
+  </div>
+
+  </div>
+  <button id="again">もう一度</button>
+</div>
+
+<div class="menu" id="menu">
+  <h1>リール撮影用</h1>
+  <p>画面録画を始めてから、場面を選んでください</p>
+  <div class="tips">
+    ① 通知を切る(集中モード)<br>
+    ② 画面の自動回転をオフ<br>
+    ③ <b>先に画面録画を開始する</b><br>
+    ④ 下のボタンを押す。2秒後に始まります<br>
+    ⑤ 終わったら録画を止めて、最初のタップ部分を切る
+  </div>
+  <button data-scene="0">① 名前を書きかえる<small>約13秒・1本目におすすめ</small></button>
+  <button data-scene="1">② エラーは大成功<small>約14秒</small></button>
+  <button data-scene="2">③ 月謝はいくら?<small>約11秒・保存されやすい</small></button>
+</div>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var menu=$('menu'), hook=$('hook'), code=$('code'), vh=$('vh'), vp=$('vp'),
+      err=$('err'), bubble=$('bubble'), endbar=$('endbar'), enda=$('enda'), endb=$('endb'),
+      editor=$('editor'), money=$('money'), say=$('say'), again=$('again');
+
+  var sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+  var cancelled = false;
+
+  /* ---- コード欄の描画。sel=[開始,終了] を黄色で、cursor=位置 にカーソル ---- */
+  function esc(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function draw(text, sel, cursor) {
+    if (sel) {
+      code.innerHTML = esc(text.slice(0,sel[0])) + '<span class="sel">' + esc(text.slice(sel[0],sel[1])) + '</span>' + esc(text.slice(sel[1]));
+    } else if (cursor != null) {
+      code.innerHTML = esc(text.slice(0,cursor)) + '<span class="cur"></span>' + esc(text.slice(cursor));
+    } else {
+      code.textContent = text;
+    }
+  }
+  function bump(el){ el.classList.remove('changed'); void el.offsetWidth; el.classList.add('changed'); }
+  function says(t){ bubble.textContent = t; bubble.classList.add('on'); }
+  function quiet(){ bubble.classList.remove('on'); }
+
+  /* ---- 1文字ずつ消す / 打つ ---- */
+  async function erase(state, from, len, speed, render) {
+    for (var i = 0; i < len; i++) {
+      if (cancelled) return;
+      state.text = state.text.slice(0, from) + state.text.slice(from + 1);
+      draw(state.text, null, from);
+      render();
+      await sleep(speed);
+    }
+  }
+  async function typeIn(state, at, str, speed, render) {
+    for (var i = 0; i < str.length; i++) {
+      if (cancelled) return;
+      state.text = state.text.slice(0, at + i) + str[i] + state.text.slice(at + i);
+      draw(state.text, null, at + i + 1);
+      render();
+      await sleep(speed);
+    }
+  }
+
+  /* =========================================================
+     場面1: 名前を書きかえる
+     ========================================================= */
+  async function scene1() {
+    editor.classList.remove('hide'); money.classList.add('hide'); say.classList.remove('hide');
+    err.classList.remove('on');
+    var L1 = '<h1>★', L1b = '★ の ページ</h1>\n<p>すきな ゲームは ★', L1c = '★ です。</p>';
+    var name = 'たろう', game = 'マイクラ';
+    var st = { text: L1 + name + L1b + game + L1c };
+
+    function render() {
+      var m = st.text.match(/<h1>★([^★]*)★/);
+      var g = st.text.match(/ゲームは ★([^★]*)★/);
+      vh.textContent = (m ? m[1] : '') + ' の ページ';
+      vp.textContent = 'すきな ゲームは ' + (g ? g[1] : '') + ' です。';
+    }
+    draw(st.text); render(); quiet(); endbar.classList.remove('on');
+
+    hook.innerHTML = '白紙からは<br><span class="hl">書かせません</span>';
+    await sleep(120); hook.classList.add('on');
+    await sleep(1700);
+
+    /* ★たろう★ を選ぶ */
+    var s = st.text.indexOf('★'), e = st.text.indexOf('★', s + 1) + 1;
+    draw(st.text, [s, e]);
+    says('ここを すきな ことばに かえよう');
+    await sleep(1400);
+
+    await erase(st, s + 1, name.length, 95, render);
+    await sleep(250);
+    await typeIn(st, s + 1, 'さくら', 190, render);
+    bump(vh); says('かわった!');
+    await sleep(1500);
+
+    /* ★マイクラ★ を選ぶ */
+    var s2 = st.text.indexOf('★', st.text.indexOf('ゲームは'));
+    var e2 = st.text.indexOf('★', s2 + 1) + 1;
+    draw(st.text, [s2, e2]); quiet();
+    await sleep(900);
+    await erase(st, s2 + 1, game.length, 90, render);
+    await sleep(200);
+    await typeIn(st, s2 + 1, 'どうぶつの森', 175, render);
+    bump(vp);
+    draw(st.text);
+    says('できた!');
+    await sleep(1500);
+
+    enda.textContent = '書きかえるだけ。覚える勉強は ゼロ';
+    endb.textContent = '西八王子駅から約1.5km圏内に訪問・オンライン｜体験は無料30分';
+    endbar.classList.add('on');
+    await sleep(2600);
+  }
+
+  /* =========================================================
+     場面2: エラーは大成功
+     ========================================================= */
+  async function scene2() {
+    editor.classList.remove('hide'); money.classList.add('hide'); say.classList.remove('hide');
+    var st = { text: '<h1>さくら の ページ</h1>\n<p>すきな ゲームは どうぶつの森 です。</p>' };
+    function render() {
+      var closed = st.text.indexOf('</p>') >= 0;
+      vh.textContent = 'さくら の ページ';
+      vp.textContent = closed ? 'すきな ゲームは どうぶつの森 です。' : '';
+    }
+    draw(st.text); render(); quiet(); endbar.classList.remove('on'); err.classList.remove('on');
+
+    hook.innerHTML = 'エラーが 出たら<br><span class="hl">大成功</span>';
+    await sleep(120); hook.classList.add('on');
+    await sleep(1800);
+
+    /* わざと </p> を消す */
+    var at = st.text.indexOf('</p>');
+    draw(st.text, [at, at + 4]);
+    says('わざと こわして みるよ');
+    await sleep(1300);
+    await erase(st, at, 4, 130, render);
+    await sleep(350);
+
+    err.innerHTML = '<b>エラーが 出たら 大成功!</b><br>パソコンからの ヒント: &lt;p&gt; を 閉じる &lt;/p&gt; が たりないかも。';
+    err.classList.add('on');
+    says('赤い文字は しかられてるんじゃないよ');
+    await sleep(2600);
+
+    says('パソコンからの ヒントだよ');
+    await sleep(1800);
+
+    await typeIn(st, at, '</p>', 150, render);
+    err.classList.remove('on');
+    draw(st.text); bump(vp);
+    says('なおった!');
+    await sleep(1700);
+
+    enda.textContent = 'エラーは「ここが ちがうよ」の サイン';
+    endb.textContent = 'つまずいた その場で、1対1で いっしょに さがします';
+    endbar.classList.add('on');
+    await sleep(2600);
+  }
+
+  /* =========================================================
+     場面3: 月謝はいくら?
+     ========================================================= */
+  async function scene3() {
+    editor.classList.add('hide'); money.classList.remove('hide'); say.classList.remove('hide'); quiet();
+    ['p1','p2'].forEach(function(i){ $(i).classList.remove('on'); });
+    ['z1','z2','z3'].forEach(function(i){ $(i).classList.remove('on'); });
+    $('once').classList.remove('on'); endbar.classList.remove('on');
+
+    hook.innerHTML = '月謝は、<span class="hl">いくら?</span>';
+    await sleep(120); hook.classList.add('on');
+    await sleep(1500);
+
+    $('p1').classList.add('on'); await sleep(700);
+    $('p2').classList.add('on'); await sleep(900);
+    $('once').classList.add('on'); await sleep(1200);
+    $('z1').classList.add('on'); await sleep(420);
+    $('z2').classList.add('on'); await sleep(420);
+    $('z3').classList.add('on'); await sleep(600);
+    says('かかるのは 月謝だけだよ'); await sleep(1800);
+
+    enda.textContent = '体験は 無料・30分';
+    endb.textContent = '保護者さま向けのご説明つき｜料金とコースはプロフィールのリンクから';
+    endbar.classList.add('on');
+    await sleep(2800);
+  }
+
+  var SCENES = [scene1, scene2, scene3];
+
+  async function play(n) {
+    cancelled = true; await sleep(30); cancelled = false;
+    menu.classList.add('hide');
+    again.classList.remove('on');
+    hook.classList.remove('on'); endbar.classList.remove('on');
+    quiet(); err.classList.remove('on');
+    await sleep(1600);               /* 録画の押し始めを切るための間 */
+    await SCENES[n]();
+    again.classList.add('on');
+  }
+
+  /* 確認用: ?auto=0〜2 で、その場面をすぐ再生する(撮影には使わない) */
+  var auto = new URLSearchParams(location.search).get('auto');
+  if (auto !== null && SCENES[+auto]) { play(+auto); }
+
+  [].forEach.call(menu.querySelectorAll('button'), function (b) {
+    b.addEventListener('click', function () { play(+b.dataset.scene); });
+  });
+  again.addEventListener('click', function () {
+    cancelled = true;
+    again.classList.remove('on');
+    menu.classList.remove('hide');
+  });
+})();
+</script>
+</body>
+</html>
