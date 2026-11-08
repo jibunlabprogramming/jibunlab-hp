@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="じぶんラボ">
+  <!-- ファビコン専用のラボくん。16pxでも形が分かるよう、あぶくを省き、線を太くし、余白を詰めている。 -->
+  <rect width="64" height="64" rx="14" fill="#1f6f64"/>
+  <path d="M22 13 H42" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/>
+  <rect x="28" y="13" width="8" height="11" fill="#fff"/>
+  <path d="M28 23 L16 46 Q11.5 56.5 22.5 56.5 H41.5 Q52.5 56.5 48 46 L36 23 Z"
+        fill="#fff" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M18.6 41 Q32 36.6 45.4 41 L48 46 Q52.5 56.5 41.5 56.5 H22.5 Q11.5 56.5 16 46 Z" fill="#7fe0cc"/>
+  <circle cx="26" cy="46" r="3.3" fill="#15312c"/>
+  <circle cx="38" cy="46" r="3.3" fill="#15312c"/>
+  <path d="M28.4 51.4 Q32 55.2 35.6 51.4" stroke="#15312c" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+</svg>
