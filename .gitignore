@@ -1,0 +1,11 @@
+# このリポジトリは公開。認証情報・個人情報は絶対に置かない
+.env
+*.env
+*リカバリーコード*
+*recovery-code*
+*名簿*
+*申込控*
+Thumbs.db
+desktop.ini
+.DS_Store
+~$*
