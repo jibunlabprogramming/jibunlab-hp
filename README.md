@@ -27,6 +27,27 @@ git push
 
 push すると、1〜2分で公開サイトに反映されます。
 
+## OGP画像(リンクのプレビュー)
+
+LINEやInstagramのDMでURLを送ったときに出るカードの画像です。
+
+- 画像: `assets/ogp.png`(1200×630)
+- もとのページ: `tools/ogp.html`
+
+文面や料金を変えたら、`tools/ogp.html` を直して撮り直してください。
+
+```
+cd /home/takashi/develop/jibunlab-hp
+google-chrome --headless --no-sandbox --disable-gpu --hide-scrollbars \
+  --virtual-time-budget=15000 --window-size=1200,630 \
+  --screenshot=assets/ogp.png tools/ogp.html
+```
+
+フォント(Zen Maru Gothic)は `~/.local/share/fonts/jibunlab/` に入れてあります。
+別のPCで作り直すときは、先に <https://github.com/google/fonts/tree/main/ofl/zenmarugothic>
+から TTF を取って `fc-cache -f` で登録してください。入っていないと、別のフォントで
+描かれてしまいます。
+
 ## メモ
 
 - `<meta name="robots" content="noindex">` を入れているため、検索エンジンには載りません。検索から集客する段階になったら、この1行を消します。

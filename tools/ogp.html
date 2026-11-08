@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>OGP画像のもと</title>
+<!--
+  assets/ogp.png のもとになるページ。1200x630 ちょうどで作ってある。
+  LINEやInstagramのDMでURLを送ったときに出る、リンクのプレビュー画像。
+
+  作り直すとき:
+    cd /home/takashi/develop/jibunlab-hp
+    google-chrome --headless --no-sandbox --disable-gpu --hide-scrollbars \
+      --virtual-time-budget=15000 --window-size=1200,630 \
+      --screenshot=assets/ogp.png tools/ogp.html
+
+  文字は小さく表示される前提で、大きく・少なくしてある。増やさないこと。
+-->
+<style>
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{width:1200px; height:630px; overflow:hidden}
+  body{
+    font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;
+    background:
+      radial-gradient(760px 520px at 86% 18%, #d6f3ec 0%, rgba(214,243,236,0) 72%),
+      linear-gradient(145deg,#fbfffe 0%, #eef9f6 60%, #e2f7f1 100%);
+    color:#1f6f64; position:relative;
+  }
+  /* 下の帯 */
+  .band{position:absolute; left:0; right:0; bottom:0; height:16px; background:#1f9d8a}
+  /* 飾りの星 */
+  .star{position:absolute; color:#ffd479; line-height:1}
+  .s1{top:48px;  left:52px;  font-size:36px; transform:rotate(-12deg)}
+  .s2{top:116px; left:24px;  font-size:22px; transform:rotate(14deg)}
+  .s3{bottom:92px; left:40px; font-size:26px; transform:rotate(8deg); color:#ffb36b}
+
+  .inner{display:flex; height:100%; align-items:center; padding:46px 56px 60px 104px; gap:28px}
+  .left{flex:1; min-width:0}
+
+  .eyebrow{
+    display:inline-block; background:#1f6f64; color:#fff; font-weight:700; font-size:23px;
+    padding:8px 22px; border-radius:999px; letter-spacing:.02em; margin-bottom:24px;
+  }
+  h1{font-size:62px; font-weight:900; line-height:1.3; letter-spacing:.005em}
+  h1 .hl{background:linear-gradient(transparent 60%, #ffe0a8 60%); padding:0 4px}
+  h1 .small{font-size:46px}
+  .sub{font-size:26px; white-space:nowrap; color:#3d6b64; font-weight:500; margin-top:18px}
+
+  .chips{display:flex; gap:12px; margin-top:30px; flex-wrap:wrap}
+  .chip{
+    background:#fff; border:4px solid #bfe9df; border-radius:999px;
+    padding:10px 22px; font-size:23px; font-weight:700; color:#1f6f64;
+  }
+  .chip b{color:#1f9d8a; font-weight:900}
+  .chip.hot{border-color:#ffb36b; background:#fff6ea}
+
+  .right{width:330px; flex:none; position:relative; display:flex; flex-direction:column; align-items:center; gap:22px}
+  .disc{
+    width:300px; height:300px; border-radius:50%; background:#fff;
+    border:9px solid #bfe9df; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 18px 44px rgba(31,111,100,.16);
+  }
+  .disc svg{width:188px; height:auto}
+  .logo{width:280px}
+  .bubble{
+    position:absolute; top:-6px; left:-66px; background:#ffb36b; color:#5d3a12;
+    font-weight:900; font-size:27px; padding:10px 20px; border-radius:16px;
+    transform:rotate(-9deg); box-shadow:0 7px 0 rgba(0,0,0,.07);
+  }
+  .bubble::after{
+    content:""; position:absolute; right:22px; bottom:-14px;
+    border:9px solid transparent; border-top-color:#ffb36b; border-bottom:0;
+  }
+</style>
+</head>
+<body>
+  <span class="star s1">★</span>
+  <span class="star s2">★</span>
+  <span class="star s3">★</span>
+
+  <div class="inner">
+    <div class="left">
+      <span class="eyebrow">西八王子｜小4〜中学生｜完全1対1</span>
+      <h1>パソコンが苦手でも<br><span class="hl">「できた!」</span>から始まる<br><span class="small">プログラミング家庭教師</span></h1>
+      <p class="sub">現役SEが自宅にうかがって1対1で教えます</p>
+      <div class="chips">
+        <span class="chip hot">体験 <b>無料・30分</b></span>
+        <span class="chip">入会金 <b>0円</b></span>
+        <span class="chip">1回 <b>3,000円</b></span>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="disc">
+        <span class="bubble">できた!</span>
+        <svg viewBox="0 0 130 150" aria-hidden="true">
+          <circle cx="52" cy="14" r="5" fill="#bfe9df" stroke="#1f6f64" stroke-width="2"/>
+          <circle cx="66" cy="8" r="3.5" fill="#bfe9df" stroke="#1f6f64" stroke-width="2"/>
+          <rect x="48" y="20" width="34" height="30" rx="5" fill="#fff" stroke="#1f6f64" stroke-width="4"/>
+          <path d="M48 48 L20 112 Q12 140 42 140 H88 Q118 140 110 112 L82 48 Z" fill="#fff" stroke="#1f6f64" stroke-width="4" stroke-linejoin="round"/>
+          <path d="M30 96 Q65 84 100 96 L110 112 Q118 140 88 140 H42 Q12 140 20 112 Z" fill="#7fe0cc"/>
+          <circle cx="50" cy="106" r="7" fill="#222"/><circle cx="80" cy="106" r="7" fill="#222"/>
+          <circle cx="52.5" cy="103.5" r="2.4" fill="#fff"/><circle cx="82.5" cy="103.5" r="2.4" fill="#fff"/>
+          <path d="M54 120 Q65 131 76 120" stroke="#222" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <circle cx="38" cy="121" r="6" fill="#ff9fb0" opacity=".8"/><circle cx="92" cy="121" r="6" fill="#ff9fb0" opacity=".8"/>
+          <path d="M40 20 H90" stroke="#1f6f64" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <img class="logo" src="../assets/logo.png" alt="じぶんラボ">
+    </div>
+  </div>
+
+  <div class="band"></div>
+</body>
+</html>
