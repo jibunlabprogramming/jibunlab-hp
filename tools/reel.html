@@ -184,7 +184,7 @@
   }
   .end.on{opacity:1; transform:none}
   .end .a{font-size:calc(16.5*var(--u)); font-weight:900; line-height:1.45}
-  .end .b{font-size:calc(12.5*var(--u)); font-weight:700; color:#a9e2d6; margin-top:calc(3*var(--u))}
+  .end .b{font-size:calc(12.5*var(--u)); font-weight:700; color:#a9e2d6; margin-top:calc(4*var(--u)); white-space:pre-line; line-height:1.6}
 
   /* もう一度 */
   #again{
@@ -374,7 +374,7 @@
     await sleep(1500);
 
     enda.textContent = '書きかえるだけ。覚える勉強は ゼロ';
-    endb.textContent = '西八王子駅から約1.5km圏内に訪問・オンライン｜体験は無料30分';
+    endb.textContent = '西八王子｜小4〜中学生｜体験は無料30分\n料金とコースは プロフィールのリンクから';
     endbar.classList.add('on');
     await sleep(2600);
   }
@@ -419,7 +419,7 @@
     await sleep(1700);
 
     enda.textContent = 'エラーは「ここが ちがうよ」の サイン';
-    endb.textContent = 'つまずいた その場で、1対1で いっしょに さがします';
+    endb.textContent = 'つまずいた その場で 1対1で いっしょに さがします\n体験は無料30分 プロフィールのリンクから';
     endbar.classList.add('on');
     await sleep(2600);
   }
@@ -446,7 +446,7 @@
     says('かかるのは 月謝だけだよ'); await sleep(1800);
 
     enda.textContent = '体験は 無料・30分';
-    endb.textContent = '保護者さま向けのご説明つき｜料金とコースはプロフィールのリンクから';
+    endb.textContent = '保護者さま向けのご説明つき\n料金とコースは プロフィールのリンクから';
     endbar.classList.add('on');
     await sleep(2800);
   }
